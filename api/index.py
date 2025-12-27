@@ -1,0 +1,49 @@
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+
+app = FastAPI()
+
+@app.get("/", response_class=HTMLResponse)
+async def sql_playground():
+    return """
+<!DOCTYPE html>
+<html>
+<head>
+<title>PartnerHub SQL Demo</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;padding:40px;max-width:1200px;margin:auto;}
+h1{color:#1e40af;font-size:2.2em;text-align:center;margin-bottom:10px;}
+.subtitle{text-align:center;color:#64748b;font-size:1.1em;margin-bottom:30px;}
+.editor{width:100%;height:220px;font-family:'SF Mono',monospace;font-size:15px;padding:20px;border:2px solid #e2e8f0;border-radius:12px;background:#1f2937;color:#e2e8f0;resize:vertical;box-sizing:border-box;}
+.buttons{text-align:center;margin:25px 0;}
+button{background:#1e40af;color:white;border:none;padding:14px 28px;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;margin:0 8px;transition:all 0.2s;}
+button:hover{background:#1e3a8a;}
+.results{margin-top:30px;padding:25px;background:white;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.08);}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+th,td{padding:16px 12px;text-align:left;border-bottom:1px solid #f1f5f9;}
+th{background:#f8fafc;font-weight:600;color:#374151;}
+.isv{background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:20px;font-size:13px;font-weight:500;}
+.si{background:#e0f2fe;color:#0369a1;padding:4px 10px;border-radius:20px;font-size:13px;font-weight:500;}
+</style>
+</head>
+<body>
+<h1>🛠️ PartnerHub SQL Playground</h1>
+<p class="subtitle">Real SaaS partner data • 4 partners • $880K ARR • Write SQL → See results instantly</p>
+<textarea class="editor" id="sql" placeholder="Type SQL queries here...&#10;Examples: SELECT * FROM partners WHERE type='ISV';&#10;SELECT type, SUM(arr) FROM partners GROUP BY type;">SELECT * FROM partners;</textarea>
+<div class="buttons">
+<button onclick="runSQL()">▶️ Execute SQL</button>
+<button onclick="loadSQL(`SELECT * FROM partners WHERE type='ISV';`)">ISV Partners</button>
+<button onclick="loadSQL(`SELECT type, COUNT(*) as count, SUM(arr) as total FROM partners GROUP BY type;`)">Analytics</button>
+<button onclick="loadSQL(`SELECT name, arr FROM partners ORDER BY arr DESC LIMIT 3;`)">Top ARR</button>
+</div>
+<div id="results" class="results"></div>
+<script>
+partners=[{id:1,name:"CloudCo",type:"ISV",arr:250000,status:"active",notes:"Key ARR driver"},{id:2,name:"TechCorp",type:"SI",arr:150000,status:"active",notes:"Implementation partner"},{id:3,name:"DataCorp",type:"ISV",arr:300000,status:"active"},{id:4,name:"SysInt",type:"SI",arr:180000,status:"pending"}];
+function parseSQL(sql){sql=sql.toLowerCase().trim();let r=[...partners];if(sql.includes("type='isv'")||sql.includes("type=isv"))r=r.filter(x=>x.type=="ISV");if(sql.includes("type='si'")||sql.includes("type=si"))r=r.filter(x=>x.type=="SI");if(sql.includes("status='active'"))r=r.filter(x=>x.status=="active");if(sql.includes("group by")){let g={};r.forEach(x=>{g[x.type]=g[x.type]||{count:0,total:0};g[x.type].count++;g[x.type].total+=x.arr});r=Object.values(g)}if(sql.includes("order by arr desc"))r.sort((a,b)=>b.arr-a.arr);return r}
+function runSQL(){let sql=document.getElementById("sql").value;let res=parseSQL(sql);showResults(sql,res)}
+function showResults(sql,res){let html=`<h3>✅ Results (<span style="color:#059669">${res.length}</span> rows):</h3><pre style="background:#f8fafc;padding:16px;border-radius:8px;margin:15px 0;font-family:monospace;font-size:14px;border-left:4px solid #10b981;">${sql}</pre>`;if(!res.length)html+=`<p style="color:#6b7280;font-style:italic;">No matching results</p>`;else{html+=`<table><tr><th>ID</th><th>Name</th><th>Type</th><th>ARR</th><th>Status</th><th>Notes</th></tr>`;res.forEach(r=>html+=`<tr><td>${r.id}</td><td><strong>${r.name}</strong></td><td><span class="${r.type.toLowerCase()}">${r.type}</span></td><td><strong>$${Math.round(r.arr/1000)}K</strong></td><td>${r.status}</td><td>${r.notes||"—"}</td></tr>`);html+="</table>"}document.getElementById("results").innerHTML=html}
+function loadSQL(q){document.getElementById("sql").value=q;runSQL()}
+runSQL();
+</script>
+</body></html>
+"""
