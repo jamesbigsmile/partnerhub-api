@@ -1,6 +1,7 @@
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Session, create_engine, select
 from fastapi import FastAPI, Depends
+from pydantic import BaseModel
 
 class Partner(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -10,11 +11,11 @@ class Partner(SQLModel, table=True):
     status: str = "active"
     notes: Optional[str] = None
 
-# In-memory DB for Vercel (resets on restart, perfect for demo)
-engine = create_engine("sqlite://", echo=True)
-SQLModel.metadata.create_all(engine)
-
 app = FastAPI(title="PartnerHub API")
+
+# Vercel serverless SQLite (ephemeral)
+engine = create_engine("sqlite:///:memory:", echo=True)
+SQLModel.metadata.create_all(engine)
 
 def get_db():
     db = Session(engine)
@@ -36,3 +37,14 @@ def get_partners(db: Session = Depends(get_db), type_: Optional[str] = None) -> 
     if type_:
         query = query.where(Partner.type == type_)
     return db.exec(query).all()
+
+@app.get("/seed/")
+def seed_data(db: Session = Depends(get_db)):
+    demo_partners = [
+        Partner(name="CloudCo", type="ISV", arr=250000),
+        Partner(name="TechCorp", type="SI", arr=150000)
+    ]
+    for p in demo_partners:
+        db.add(p)
+    db.commit()
+    return {"message": "Seeded demo data"}
