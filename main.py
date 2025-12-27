@@ -10,7 +10,8 @@ class Partner(SQLModel, table=True):
     status: str = "active"
     notes: Optional[str] = None
 
-engine = create_engine("sqlite:///partners.db")
+# In-memory DB for Vercel (resets on restart, perfect for demo)
+engine = create_engine("sqlite://", echo=True)
 SQLModel.metadata.create_all(engine)
 
 app = FastAPI(title="PartnerHub API")
@@ -34,5 +35,4 @@ def get_partners(db: Session = Depends(get_db), type_: Optional[str] = None) -> 
     query = select(Partner)
     if type_:
         query = query.where(Partner.type == type_)
-    partners = db.exec(query).all()
-    return partners
+    return db.exec(query).all()
