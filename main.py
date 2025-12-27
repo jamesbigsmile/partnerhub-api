@@ -48,3 +48,31 @@ def seed_data(db: Session = Depends(get_db)):
         db.add(p)
     db.commit()
     return {"message": "Seeded demo data"}
+
+@app.post("/sql/execute/")
+def execute_sql(sql: str, db: Session = Depends(get_db)):
+    try:
+        result = db.exec(sql).all()
+        return {"sql": sql, "results": result}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/sql/create-partner/")
+def sql_create_partner(name: str, type_: str, arr: int, db: Session = Depends(get_db)):
+    sql = f"INSERT INTO partner (name, type, arr) VALUES ('{name}', '{type_}', {arr})"
+    db.exec(sql)
+    db.commit()
+    return {"sql": sql, "message": "Partner created via raw SQL"}
+
+@app.get("/sql/analytics/")
+def sql_analytics(db: Session = Depends(get_db)) -> List[dict]:
+    queries = [
+        "SELECT type, SUM(arr) as total_arr FROM partner GROUP BY type",
+        "SELECT COUNT(*) as active_partners FROM partner WHERE status='active'",
+        "SELECT name, arr FROM partner ORDER BY arr DESC LIMIT 3"
+    ]
+    results = []
+    for sql in queries:
+        result = db.exec(sql).first()
+        results.append({"sql": sql, "result": result})
+    return results
