@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,14 +8,11 @@ h1{color:#1e40af;font-size:2.2em;text-align:center;margin-bottom:10px;}
 .subtitle{text-align:center;color:#64748b;font-size:1.1em;margin-bottom:30px;}
 .editor{width:100%;height:220px;font-family:'SF Mono',monospace;font-size:15px;padding:20px;border:2px solid #e2e8f0;border-radius:12px;background:#1f2937;color:#e2e8f0;resize:vertical;box-sizing:border-box;}
 .buttons{text-align:center;margin:25px 0;}
-button{background:#1e40af;color:white;border:none;padding:14px 28px;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;margin:0 8px;transition:all 0.2s;}
+button{background:#1e40af;color:white;border:none;padding:14px 28px;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;transition:all 0.2s;}
 button:hover{background:#1e3a8a;}
+#loading{display:none;text-align:center;padding:20px;font-size:18px;}
 .results{margin-top:30px;padding:25px;background:white;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.08);}
-table{width:100%;border-collapse:collapse;margin-top:15px;}
-th,td{padding:16px 12px;text-align:left;border-bottom:1px solid #f1f5f9;}
-th{background:#f8fafc;font-weight:600;color:#374151;}
-.isv{background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:20px;font-size:13px;font-weight:500;}
-.si{background:#e0f2fe;color:#0369a1;padding:4px 10px;border-radius:20px;font-size:13px;font-weight:500;}
+.error{background:#fee2e2;border:1px solid #fecaca;color:#dc2626;padding:16px;border-radius:8px;margin-top:10px;}
 </style>
 </head>
 <body>
@@ -25,8 +21,8 @@ th{background:#f8fafc;font-weight:600;color:#374151;}
 <textarea class="editor" id="sql-input" placeholder="Type SQL queries here...&#10;Examples: SELECT * FROM partners WHERE type='ISV';&#10;SELECT type, SUM(arr) FROM partners GROUP BY type;">SELECT * FROM partners;</textarea>
 <div class="buttons">
 <button onclick="runSQL()">▶️ Execute SQL</button>
-<div id="loading" style="display:none;text-align:center;padding:20px;font-size:18px;">⏳ Executing SQL...</div>
 </div>
+<div id="loading">⏳ Executing SQL...</div>
 <div id="results" class="results"></div>
 <script>
 async function execute() {
@@ -52,7 +48,6 @@ async function execute() {
       return;
     }
     
-    // Show raw results + SQL
     results.innerHTML = `
       <h3>✅ Success: ${data.rows ? data.rows.length : 0} rows</h3>
       <pre style="background:#f8f9fa;padding:1rem;border-radius:8px;border-left:4px solid #28a745;font-family:monospace;">${sql}</pre>
@@ -64,5 +59,7 @@ async function execute() {
     results.innerHTML = `<div class="error">🌐 Network error: ${e.message}</div>`;
   }
 }
-function runSQL() { execute(); }</script>
-</body></html>
+function runSQL() { execute(); }
+</script>
+</body>
+</html>
