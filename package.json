@@ -1,0 +1,31 @@
+{
+  "name": "partnerhub-api",
+  "version": "1.0.0",
+  "description": "FastAPI + SQLModel + SQLite demo tracking SaaS partnerships.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamesbigsmile/partnerhub-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jamesbigsmile/partnerhub-api/issues"
+  },
+  "homepage": "https://github.com/jamesbigsmile/partnerhub-api#readme",
+  "dependencies": {
+    "@planetscale/database": "^1.19.0",
+    "better-sqlite3": "^12.5.0",
+    "mysql2": "^3.16.0",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.8",
+    "drizzle-orm": "^0.45.1"
+  }
+}

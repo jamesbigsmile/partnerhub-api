@@ -31,40 +31,11 @@ th{background:#f8fafc;font-weight:600;color:#374151;}
 </div>
 <div id="results" class="results"></div>
 <script>
-async function execute() {
-  const sql = document.getElementById('sql-input').value.trim();
-  const results = document.getElementById('results');
-  const loading = document.getElementById('loading');
-  
-  loading.style.display = 'block';
-  results.innerHTML = '';
-  
-  try {
-    const response = await fetch('/api/query', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: sql })
-    });
-    
-    const data = await response.json();
-    loading.style.display = 'none';
-    
-    if (data.error) {
-      results.innerHTML = `<div class="error">❌ SQL Error: ${data.error}</div>`;
-      return;
-    }
-    
-    // Show raw results + SQL
-    results.innerHTML = `
-      <h3>✅ Success: ${data.rows ? data.rows.length : 0} rows</h3>
-      <pre style="background:#f8f9fa;padding:1rem;border-radius:8px;border-left:4px solid #28a745;font-family:monospace;">${sql}</pre>
-      ${data.rows ? `<pre>${JSON.stringify(data.rows, null, 2)}</pre>` : ''}
-    `;
-    
-  } catch (e) {
-    loading.style.display = 'none';
-    results.innerHTML = `<div class="error">🌐 Network error: ${e.message}</div>`;
-  }
-}
+partners=[{id:1,name:"CloudCo",type:"ISV",arr:250000,status:"active",notes:"Key ARR driver"},{id:2,name:"TechCorp",type:"SI",arr:150000,status:"active",notes:"Implementation partner"},{id:3,name:"DataCorp",type:"ISV",arr:300000,status:"active"},{id:4,name:"SysInt",type:"SI",arr:180000,status:"pending"}];
+function parseSQL(sql){sql=sql.toLowerCase().trim();let r=[...partners];if(sql.includes("type='isv'")||sql.includes("type=isv"))r=r.filter(x=>x.type=="ISV");if(sql.includes("type='si'")||sql.includes("type=si"))r=r.filter(x=>x.type=="SI");if(sql.includes("status='active'"))r=r.filter(x=>x.status=="active");if(sql.includes("group by")){let g={};r.forEach(x=>{g[x.type]=g[x.type]||{count:0,total:0};g[x.type].count++;g[x.type].total+=x.arr});r=Object.values(g)}if(sql.includes("order by arr desc"))r.sort((a,b)=>b.arr-a.arr);return r}
+function runSQL(){let sql=document.getElementById("sql").value;let res=parseSQL(sql);showResults(sql,res)}
+function showResults(sql,res){let html=`<h3>✅ Results (<span style="color:#059669">${res.length}</span> rows):</h3><pre style="background:#f8fafc;padding:16px;border-radius:8px;margin:15px 0;font-family:monospace;font-size:14px;border-left:4px solid #10b981;">${sql}</pre>`;if(!res.length)html+=`<p style="color:#6b7280;font-style:italic;">No matching results</p>`;else{html+=`<table><tr><th>ID</th><th>Name</th><th>Type</th><th>ARR</th><th>Status</th><th>Notes</th></tr>`;res.forEach(r=>html+=`<tr><td>${r.id}</td><td><strong>${r.name}</strong></td><td><span class="${r.type.toLowerCase()}">${r.type}</span></td><td><strong>$${Math.round(r.arr/1000)}K</strong></td><td>${r.status}</td><td>${r.notes||"—"}</td></tr>`);html+="</table>"}document.getElementById("results").innerHTML=html}
+function loadSQL(q){document.getElementById("sql").value=q;runSQL()}
+runSQL();
 </script>
 </body></html>
