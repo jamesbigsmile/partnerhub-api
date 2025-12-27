@@ -19,46 +19,34 @@ DEMO_PARTNERS = [
     Partner(id=2, name="TechCorp", type="SI", arr=150000, notes="Implementation partner"),
     Partner(id=3, name="DataCorp", type="ISV", arr=300000),
     Partner(id=4, name="SysInt", type="SI", arr=180000, status="pending"),
-]
+cat > main.py << 'EOF'
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 
-@app.get("/")
-def root():
-    return {"message": "PartnerHub API Live!", "docs": "/docs"}
+app = FastAPI()
 
-@app.get("/partners/", response_model=List[Partner])
-def get_partners(type_: Optional[str] = None, status: Optional[str] = None):
-    partners = DEMO_PARTNERS
-    if type_:
-        partners = [p for p in partners if p.type == type_]
-    if status:
-        partners = [p for p in partners if p.status == status]
-    return partners
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return """
+<!DOCTYPE html>
+<html>
+<head><title>SQL Demo</title>
+<style>body{font-family:monospace;padding:30px;max-width:1000px;margin:auto;}
+textarea{width:100%;height:150px;font-family:monospace;}
+table,th,td{border:1px solid #ccc;padding:8px;text-align:left;}
+</style></head>
+<body>
+<h1>PartnerHub SQL Playground</h1>
+<textarea id="query">SELECT * FROM partners WHERE type='ISV';</textarea><br>
+<button onclick="run()">Run SQL</button>
+<div id="out"></div>
+<script>
+data=[{id:1,name:"CloudCo",type:"ISV",arr:250,status:"active"},{id:2,name:"TechCorp",type:"SI",arr:150,status:"active"}];
+function run(){let q=document.getElementById("query").value.toLowerCase();let r=[...data];if(q.includes("isv"))r=r.filter(x=>x.type=="ISV");document.getElementById("out").innerHTML="<h3>Results:</h3>"+table(r)}
+function table(d){if(!d.length)return"<p>No results</p>";let t="<table><tr><th>ID</th><th>Name</th><th>Type</th><th>ARR</th></tr>";d.forEach(x=>t+="<tr><td>"+x.id+"</td><td>"+x.name+"</td><td>"+x.type+"</td><td>$"+x.arr+"K</td></tr>");return t+"</table>"}
+</script>
+</body>
+</html>
+"""
+EOF
 
-@app.get("/partners/{partner_id}", response_model=Partner)
-def get_partner(partner_id: int):
-    partner = next((p for p in DEMO_PARTNERS if p.id == partner_id), None)
-    if not partner:
-        return {"error": "Partner not found"}
-    return partner
-
-@app.get("/analytics/")
-def analytics():
-    total_arr = sum(p.arr for p in DEMO_PARTNERS)
-    isv_arr = sum(p.arr for p in DEMO_PARTNERS if p.type == "ISV")
-    active_count = len([p for p in DEMO_PARTNERS if p.status == "active"])
-    return {
-        "total_arr": total_arr,
-        "isv_arr": isv_arr,
-        "active_partners": active_count,
-        "sql_equivalent": "SELECT SUM(arr), COUNT(*) FROM partner WHERE status='active'"
-    }
-
-@app.get("/sql-examples/")
-def sql_examples():
-    return {
-        "queries": [
-            "SELECT type, SUM(arr) FROM partner GROUP BY type",
-            "SELECT COUNT(*) FROM partner WHERE status='active'", 
-            "SELECT name, arr FROM partner ORDER BY arr DESC LIMIT 3"
-        ]
-    }
