@@ -25,10 +25,7 @@ th{background:#f8fafc;font-weight:600;color:#374151;}
 <textarea class="editor" id="sql-input" placeholder="Type SQL queries here...&#10;Examples: SELECT * FROM partners WHERE type='ISV';&#10;SELECT type, SUM(arr) FROM partners GROUP BY type;">SELECT * FROM partners;</textarea>
 <div class="buttons">
 <button onclick="runSQL()">▶️ Execute SQL</button>
-<button onclick="loadSQL(`SELECT * FROM partners WHERE type='ISV';`)">ISV Partners</button>
 <div id="loading" style="display:none;text-align:center;padding:20px;font-size:18px;">⏳ Executing SQL...</div>
-<button onclick="loadSQL(`SELECT type, COUNT(*) as count, SUM(arr) as total FROM partners GROUP BY type;`)">Analytics</button>
-<button onclick="loadSQL(`SELECT name, arr FROM partners ORDER BY arr DESC LIMIT 3;`)">Top ARR</button>
 </div>
 <div id="results" class="results"></div>
 <script>
