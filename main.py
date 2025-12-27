@@ -1,52 +1,45 @@
-from typing import List, Optional
-from pydantic import BaseModel
-from fastapi import FastAPI, Body
-from datetime import datetime
-
-app = FastAPI(title="PartnerHub API 🚀")
-
-class Partner(BaseModel):
-    id: int
-    name: str
-    type: str
-    arr: int
-    status: str = "active"
-    notes: Optional[str] = None
-
-# PRE-SEED DEMO DATA (Vercel-proof)
-DEMO_PARTNERS = [
-    Partner(id=1, name="CloudCo", type="ISV", arr=250000, notes="Key ARR driver"),
-    Partner(id=2, name="TechCorp", type="SI", arr=150000, notes="Implementation partner"),
-    Partner(id=3, name="DataCorp", type="ISV", arr=300000),
-    Partner(id=4, name="SysInt", type="SI", arr=180000, status="pending"),
-cat > main.py << 'EOF'
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+import sqlite3
+from pydantic import BaseModel
 
 app = FastAPI()
 
-@app.get("/", response_class=HTMLResponse)
-def home():
-    return """
-<!DOCTYPE html>
-<html>
-<head><title>SQL Demo</title>
-<style>body{font-family:monospace;padding:30px;max-width:1000px;margin:auto;}
-textarea{width:100%;height:150px;font-family:monospace;}
-table,th,td{border:1px solid #ccc;padding:8px;text-align:left;}
-</style></head>
-<body>
-<h1>PartnerHub SQL Playground</h1>
-<textarea id="query">SELECT * FROM partners WHERE type='ISV';</textarea><br>
-<button onclick="run()">Run SQL</button>
-<div id="out"></div>
-<script>
-data=[{id:1,name:"CloudCo",type:"ISV",arr:250,status:"active"},{id:2,name:"TechCorp",type:"SI",arr:150,status:"active"}];
-function run(){let q=document.getElementById("query").value.toLowerCase();let r=[...data];if(q.includes("isv"))r=r.filter(x=>x.type=="ISV");document.getElementById("out").innerHTML="<h3>Results:</h3>"+table(r)}
-function table(d){if(!d.length)return"<p>No results</p>";let t="<table><tr><th>ID</th><th>Name</th><th>Type</th><th>ARR</th></tr>";d.forEach(x=>t+="<tr><td>"+x.id+"</td><td>"+x.name+"</td><td>"+x.type+"</td><td>$"+x.arr+"K</td></tr>");return t+"</table>"}
-</script>
-</body>
-</html>
-"""
-EOF
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+class SQLQuery(BaseModel):
+    query: str
+
+# Create DB table
+conn = sqlite3.connect('partners.db', check_same_thread=False)
+conn.execute('''CREATE TABLE IF NOT EXISTS partners 
+                (id INTEGER PRIMARY KEY, name TEXT, type TEXT, arr REAL)''')
+# Add demo data
+conn.execute("INSERT OR IGNORE INTO partners VALUES (1,'HubSpot','ISV',250000)")
+conn.execute("INSERT OR IGNORE INTO partners VALUES (2,'Salesforce','SI',500000)")
+conn.execute("INSERT OR IGNORE INTO partners VALUES (3,'Marketo','Referral',75000)")
+conn.commit()
+conn.close()
+
+@app.post("/execute-sql")
+async def execute_sql(query: SQLQuery):
+    try:
+        conn = sqlite3.connect('partners.db', check_same_thread=False)
+        cursor = conn.cursor()
+        cursor.execute(query.query)
+        results = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description] if cursor.description else []
+        conn.close()
+        return {"success": True, "columns": columns, "rows": results}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/")
+async def root():
+    return {"message": "PartnerHub API - Local SQLite", "status": "ready"}
