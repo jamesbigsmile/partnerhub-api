@@ -21,6 +21,8 @@
   "dependencies": {
     "@planetscale/database": "^1.19.0",
     "better-sqlite3": "^12.5.0",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
     "mysql2": "^3.16.0",
     "sqlite3": "^5.1.7"
   },

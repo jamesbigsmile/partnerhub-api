@@ -40,7 +40,7 @@ async function execute() {
   results.innerHTML = '';
   
   try {
-    const response = await fetch('/api/query', {
+    const response = await fetch('http://localhost:3001/api/query', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: sql })
