@@ -40,7 +40,7 @@ async function execute() {
   results.innerHTML = '';
   
   try {
-    const response = await fetch('http://localhost:3001/api/query', {
+    const response = await fetch('https://nonprognosticative-yolanda-chemotactic.ngrok-free.dev/execute-sql', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: sql })
@@ -66,5 +66,5 @@ async function execute() {
     results.innerHTML = `<div class="error">🌐 Network error: ${e.message}</div>`;
   }
 }
-</script>
+function runSQL() { execute(); }</script>
 </body></html>
