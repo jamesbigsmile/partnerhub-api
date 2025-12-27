@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+partners.db
+venv/
+node_modules/
